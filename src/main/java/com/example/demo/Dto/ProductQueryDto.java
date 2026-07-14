@@ -1,10 +1,9 @@
-package com.example.demo.Dto;
+package com.example.demo.dto;
 
 import lombok.Data;
 
 @Data
 public class ProductQueryDto {
-    // 分页
     private Long current = 1L;
     private Long size = 10L;
 
