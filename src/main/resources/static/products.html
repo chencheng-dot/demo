@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品列表</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f5f7fa;
+            color: #303133;
+        }
+        .header {
+            background: #fff;
+            padding: 16px 32px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 18px; }
+        .header .user-info { font-size: 14px; color: #606266; }
+        .header .user-info span { margin-right: 12px; }
+        .header button {
+            padding: 6px 16px;
+            background: #f56c6c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .container { max-width: 1200px; margin: 24px auto; padding: 0 24px; }
+        .search-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        .form-item { display: flex; flex-direction: column; gap: 6px; }
+        .form-item label { font-size: 13px; color: #606266; }
+        .form-item input, .form-item select {
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+            min-width: 160px;
+        }
+        .search-btn, .reset-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .search-btn { background: #409eff; color: white; }
+        .reset-btn { background: #909399; color: white; }
+        table {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            border-collapse: collapse;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #ebeef5;
+            font-size: 14px;
+        }
+        th {
+            background: #fafafa;
+            font-weight: 500;
+            color: #606266;
+        }
+        tr:hover { background: #f5f7fa; }
+        .warning { color: #f56c6c; font-weight: 500; }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .tag-on { background: #f0f9eb; color: #67c23a; }
+        .tag-off { background: #fef0f0; color: #f56c6c; }
+        .pagination {
+            margin-top: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+        }
+        .pagination button {
+            padding: 6px 14px;
+            border: 1px solid #dcdfe6;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background: #409eff;
+            color: white;
+            border-color: #409eff;
+        }
+        .pagination button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>商品管理系统</h1>
+        <div class="user-info">
+            <span id="username-display"></span>
+            <button onclick="logout()">退出登录</button>
+        </div>
+    </div>
+    <div class="container">
+        <div class="search-bar">
+            <div class="form-item">
+                <label>商品名称</label>
+                <input type="text" id="name" placeholder="请输入商品名称">
+            </div>
+            <div class="form-item">
+                <label>分类</label>
+                <input type="text" id="category" placeholder="请输入分类">
+            </div>
+            <div class="form-item">
+                <label>最低价</label>
+                <input type="number" id="minPrice" placeholder="最低价">
+            </div>
+            <div class="form-item">
+                <label>最高价</label>
+                <input type="number" id="maxPrice" placeholder="最高价">
+            </div>
+            <button class="search-btn" onclick="search()">搜索</button>
+            <button class="reset-btn" onclick="reset()">重置</button>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>商品名称</th>
+                    <th>分类</th>
+                    <th>价格</th>
+                    <th>库存</th>
+                    <th>预警库存</th>
+                    <th>状态</th>
+                    <th>创建时间</th>
+                </tr>
+            </thead>
+            <tbody id="product-list"></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+    </div>
+    <script>
+        const API = 'http://localhost:8080';
+        let currentPage = 1;
+        let pageSize = 10;
+        let totalPages = 1;
+
+        function checkLogin() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+            document.getElementById('username-display').textContent = '欢迎，' + localStorage.getItem('username');
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = 'index.html';
+        }
+
+        function search() {
+            currentPage = 1;
+            loadProducts();
+        }
+
+        function reset() {
+            document.getElementById('name').value = '';
+            document.getElementById('category').value = '';
+            document.getElementById('minPrice').value = '';
+            document.getElementById('maxPrice').value = '';
+            currentPage = 1;
+            loadProducts();
+        }
+
+        function loadProducts() {
+            const token = localStorage.getItem('token');
+            const name = document.getElementById('name').value;
+            const category = document.getElementById('category').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+
+            let url = `${API}/product/page?current=${currentPage}&size=${pageSize}`;
+            if (name) url += '&name=' + encodeURIComponent(name);
+            if (category) url += '&category=' + encodeURIComponent(category);
+            if (minPrice) url += '&minPrice=' + minPrice;
+            if (maxPrice) url += '&maxPrice=' + maxPrice;
+
+            fetch(url, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (!data) return;
+                renderTable(data.records || []);
+                totalPages = Math.ceil((data.total || 0) / pageSize;
+                renderPagination();
+            })
+            .catch(err => console.error(err));
+        }
+
+        function renderTable(list) {
+            const tbody = document.getElementById('product-list');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#909399;padding:40px;">暂无数据</td></tr>';
+                return;
+            }
+            tbody.innerHTML = list.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.productName}</td>
+                    <td>${p.category}</td>
+                    <td>¥${p.price}</td>
+                    <td class="${p.stock <= p.warnStock ? 'warning' : ''}">${p.stock}${p.stock <= p.warnStock ? ' (预警)' : ''}</td>
+                    <td>${p.warnStock}</td>
+                    <td><span class="tag ${p.status === 1 ? 'tag-on' : 'tag-off'}">${p.status === 1 ? '上架' : '下架'}</span></td>
+                    <td>${p.createTime ? p.createTime.substring(0, 19).replace('T', ' ') : ''}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderPagination() {
+            const pg = document.getElementById('pagination');
+            let html = `<button onclick="goPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>上一页</button>`;
+            for (let i = 1; i <= totalPages; i++) {
+                html += `<button class="${i === currentPage ? 'active' : ''}" onclick="goPage(${i})">${i}</button>`;
+            }
+            html += `<button onclick="goPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>下一页</button>`;
+            pg.innerHTML = html;
+        }
+
+        function goPage(page) {
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            loadProducts();
+        }
+
+        checkLogin();
+        loadProducts();
+    </script>
+</body>
+</html>
