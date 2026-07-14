@@ -58,4 +58,48 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 .map(Object::toString)
                 .toList();
     }
+
+    @Override
+    public void addProduct(Product product) {
+        this.save(product);
+    }
+
+    @Override
+    public void stockIn(Long id, Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new RuntimeException("入库数量必须大于0");
+        }
+        Product product = this.getById(id);
+        if (product == null) {
+            throw new RuntimeException("商品不存在");
+        }
+        product.setStock(product.getStock() + quantity);
+        this.updateById(product);
+    }
+
+    @Override
+    public void stockOut(Long id, Integer quantity) {
+        if (quantity == null || quantity <= 0) {
+            throw new RuntimeException("出库数量必须大于0");
+        }
+        Product product = this.getById(id);
+        if (product == null) {
+            throw new RuntimeException("商品不存在");
+        }
+        if (product.getStock() < quantity) {
+            throw new RuntimeException("库存不足，当前库存: " + product.getStock());
+        }
+        product.setStock(product.getStock() - quantity);
+        this.updateById(product);
+    }
+
+    @Override
+    public void changeStatus(Long id, Integer status) {
+        Product product = this.getById(id);
+        if (product == null) {
+            throw new RuntimeException("商品不存在");
+        }
+        product.setStatus(status);
+        this.updateById(product);
+    }
 }

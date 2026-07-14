@@ -11,4 +11,8 @@ public interface ProductService extends IService<Product> {
     String safeDelete(Long id);
     List<Product> getWarningProducts();
     List<String> getCategories();
+    void addProduct(Product product);
+    void stockIn(Long id, Integer quantity);
+    void stockOut(Long id, Integer quantity);
+    void changeStatus(Long id, Integer status);
 }
