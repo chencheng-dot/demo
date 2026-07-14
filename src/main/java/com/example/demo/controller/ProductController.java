@@ -31,4 +31,9 @@ public class ProductController {
     public List<Product> warning() {
         return productService.getWarningProducts();
     }
+
+    @GetMapping("/categories")
+    public List<String> categories() {
+        return productService.getCategories();
+    }
 }

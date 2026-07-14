@@ -128,7 +128,9 @@
             </div>
             <div class="form-item">
                 <label>分类</label>
-                <input type="text" id="category" placeholder="请输入分类">
+                <select id="category">
+                    <option value="">请选择分类</option>
+                </select>
             </div>
             <div class="form-item">
                 <label>最低价</label>
@@ -193,8 +195,23 @@
             loadProducts();
         }
 
+        function loadCategories() {
+            fetch(API + '/product/categories')
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById('category');
+                select.innerHTML = '<option value="">请选择分类</option>';
+                data.forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    select.appendChild(option);
+                });
+            })
+            .catch(err => console.error(err));
+        }
+
         function loadProducts() {
-            const token = localStorage.getItem('token');
             const name = document.getElementById('name').value;
             const category = document.getElementById('category').value;
             const minPrice = document.getElementById('minPrice').value;
@@ -206,20 +223,12 @@
             if (minPrice) url += '&minPrice=' + minPrice;
             if (maxPrice) url += '&maxPrice=' + maxPrice;
 
-            fetch(url, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            })
-            .then(res => {
-                if (res.status === 401) {
-                    logout();
-                    return;
-                }
-                return res.json();
-            })
+            fetch(url)
+            .then(res => res.json())
             .then(data => {
                 if (!data) return;
                 renderTable(data.records || []);
-                totalPages = Math.ceil((data.total || 0) / pageSize;
+                totalPages = Math.ceil((data.total || 0) / pageSize);
                 renderPagination();
             })
             .catch(err => console.error(err));
@@ -262,6 +271,7 @@
         }
 
         checkLogin();
+        loadCategories();
         loadProducts();
     </script>
 </body>

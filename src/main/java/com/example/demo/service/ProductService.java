@@ -10,4 +10,5 @@ public interface ProductService extends IService<Product> {
     Page<Product> pageQuery(ProductQueryDto dto);
     String safeDelete(Long id);
     List<Product> getWarningProducts();
+    List<String> getCategories();
 }

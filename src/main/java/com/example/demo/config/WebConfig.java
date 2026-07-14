@@ -31,6 +31,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/auth/login",
                         "/auth/register",
                         "/product/warning",
+                        "/product/categories",
+                        "/product/page",
                         "/",
                         "/index.html",
                         "/register.html",

@@ -48,4 +48,14 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                .apply("stock <= warn_stock");
         return this.list(wrapper);
     }
+
+    @Override
+    public List<String> getCategories() {
+        return this.baseMapper.selectObjs(new LambdaQueryWrapper<Product>()
+                .select(Product::getCategory)
+                .groupBy(Product::getCategory))
+                .stream()
+                .map(Object::toString)
+                .toList();
+    }
 }
