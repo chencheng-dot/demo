@@ -62,7 +62,7 @@
         </div>
         <button onclick="login()">登录</button>
         <div id="error" class="error"></div>
-        <div class="msg">还没有账号？<a href="register.html">去注册</a></div>
+        <div class="msg">还没有账号？<a href="/register">去注册</a></div>
         <div class="msg" style="margin-top:8px;">管理员: admin / admin123</div>
     </div>
     <script>
@@ -84,8 +84,9 @@
             .then(data => {
                 if (data.code === 200) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('username', username);
-                    window.location.href = 'products.html';
+                    localStorage.setItem('username', data.username || username);
+                    localStorage.setItem('role', data.role || 'user');
+                    window.location.href = '/products';
                 } else {
                     showError(data.msg);
                 }

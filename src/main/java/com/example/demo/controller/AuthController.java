@@ -34,10 +34,12 @@ public class AuthController {
     public Map<String, Object> login(@RequestBody LoginDto dto) {
         Map<String, Object> result = new HashMap<>();
         try {
-            String token = userService.login(dto.getUsername(), dto.getPassword());
+            Map<String, Object> loginInfo = userService.loginWithInfo(dto.getUsername(), dto.getPassword());
             result.put("code", 200);
             result.put("msg", "登录成功");
-            result.put("token", token);
+            result.put("token", loginInfo.get("token"));
+            result.put("username", loginInfo.get("username"));
+            result.put("role", loginInfo.get("role"));
         } catch (Exception e) {
             result.put("code", 500);
             result.put("msg", e.getMessage());

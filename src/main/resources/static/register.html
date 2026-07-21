@@ -62,7 +62,7 @@
         </div>
         <button onclick="register()">注册</button>
         <div id="error" class="error"></div>
-        <div class="msg">已有账号？<a href="index.html">去登录</a></div>
+        <div class="msg">已有账号？<a href="/login">去登录</a></div>
     </div>
     <script>
         const API = 'http://localhost:8080';
@@ -83,7 +83,7 @@
             .then(data => {
                 if (data.code === 200) {
                     alert('注册成功，请登录');
-                    window.location.href = 'index.html';
+                    window.location.href = '/login';
                 } else {
                     showError(data.msg);
                 }
