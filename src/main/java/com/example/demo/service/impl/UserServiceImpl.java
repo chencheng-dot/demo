@@ -42,4 +42,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return JwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
     }
+
+    @Override
+    public java.util.Map<String, Object> loginWithInfo(String username, String password) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getUsername, username);
+        User user = this.getOne(wrapper);
+        if (user == null) {
+            throw new RuntimeException("用户不存在");
+        }
+        if (!encoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("密码错误");
+        }
+        java.util.Map<String, Object> info = new java.util.HashMap<>();
+        info.put("token", JwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole()));
+        info.put("username", user.getUsername());
+        info.put("role", user.getRole());
+        return info;
+    }
 }
